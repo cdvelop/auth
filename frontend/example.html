@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inicio de sesión</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      max-width: 300px;
+      margin: 20px auto;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .google-login {
+      width: 100%;
+      padding: 10px;
+      background-color: #dd4b39;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Iniciar sesión</h1>
+  <form id="login-form">
+    <input type="text" id="email" placeholder="Correo electrónico" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    <input type="submit" value="Iniciar sesión">
+  </form>
+  <div id="google-login-button" class="google-login">Iniciar sesión con Google</div>
+
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script>
+    function onSignIn(googleUser) {
+      var profile = googleUser.getBasicProfile();
+      var email = profile.getEmail();
+      // Aquí puedes realizar acciones con la información de inicio de sesión con Google, como enviarla al servidor para autenticar al usuario.
+      console.log('Inició sesión con Google:', email);
+    }
+
+    function renderGoogleLoginButton() {
+      gapi.load('auth2', function() {
+        gapi.auth2.init({
+          client_id: 'TU_CLIENT_ID'
+        }).then(function(auth2) {
+          gapi.signin2.render('google-login-button', {
+            'scope': 'profile email',
+            'width': 200,
+            'height': 40,
+            'longtitle': true,
+            'theme': 'dark',
+            'onsuccess': onSignIn
+          });
+        });
+      });
+    }
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+      // Aquí puedes realizar acciones con los datos de inicio de sesión ingresados, como enviarlos al servidor para autenticar al usuario.
+      console.log('Inició sesión con campos:', email, password);
+    });
+
+    renderGoogleLoginButton();
+  </script>
+</body>
+</html>
