@@ -8,14 +8,16 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/drive/v2"
 )
 
 var client_id_google string     //go build -ldflags "-X auth.client_id_google=XXX"
 var client_secret_google string //go build -ldflags "-X auth.client_secret_google=XXX"
 
 type google_dev struct {
-	*auth
+	*Auth
 	*oauth2.Config
+	scopes []string
 }
 
 // proveedor google cuenta desarrollador
@@ -23,7 +25,30 @@ func (google_dev) Name() string {
 	return "google_dev"
 }
 
-func ConfigGoogleOauth2() *oauth2.Config {
+func (a *Auth) GoogleDev(scopes ...string) *google_dev {
+
+	scopes = append(scopes,
+		"https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+		drive.DriveScope,
+	)
+
+	p := google_dev{
+		Auth:   a,
+		scopes: scopes,
+	}
+
+	p.configGoogleOauth2()
+
+	if a.mux != nil {
+		a.mux.HandleFunc("/login/"+p.Name(), p.login)
+		a.mux.HandleFunc("/callback/"+p.Name(), p.callback)
+	}
+
+	return &p
+}
+
+func (g *google_dev) configGoogleOauth2() {
 
 	if client_id_google == "" {
 		client_id_google = os.Getenv("client_id_google")
@@ -39,18 +64,27 @@ func ConfigGoogleOauth2() *oauth2.Config {
 		}
 	}
 
-	return &oauth2.Config{
+	g.Config = &oauth2.Config{
 		ClientID:     client_id_google,
 		ClientSecret: client_secret_google,
 		Endpoint:     google.Endpoint,
-		RedirectURL:  "",
-		Scopes:       []string{},
+		RedirectURL:  "", // se configura en Login
+		Scopes:       g.scopes,
 	}
+
 }
 
 //{"web":{"client_id":"XXX","project_id":"XXX","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"XXXX","redirect_uris":["http://localhost:8080/callback"]}}
 
-func (p google_dev) Login(w http.ResponseWriter, r *http.Request) {
+func (p *google_dev) login(w http.ResponseWriter, r *http.Request) {
+	p.setDomain(r)
+	if p.Config.RedirectURL == "" {
+		var http = "http://"
+		if p.https {
+			http = "https://"
+		}
+		p.Config.RedirectURL = http + r.Host + "/callback/" + p.Name()
+	}
 
 	_, err := p.getTokenFromClientCookie(r)
 	if err != nil { //no hay token solicitar uno nuevo
@@ -61,12 +95,12 @@ func (p google_dev) Login(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
 	} else {
-		http.Redirect(w, r, p.home, http.StatusSeeOther)
+		http.Redirect(w, r, p.redirect_success, http.StatusSeeOther)
 	}
 
 }
 
-func (p google_dev) Callback(w http.ResponseWriter, r *http.Request) {
+func (p google_dev) callback(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	fmt.Println("Recorre los parámetros enviados en la URL")
 	for key, values := range r.Form {
@@ -76,7 +110,7 @@ func (p google_dev) Callback(w http.ResponseWriter, r *http.Request) {
 
 	receivedState := r.Form.Get(p.status)
 
-	cookie_state, err := getCookie(p.status, r)
+	cookie_state, err := GetCookie(p.status, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -95,8 +129,25 @@ func (p google_dev) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.saveTokenInClientCookie(token, w)
+	p.saveTokenInClientCookie(token, w, r)
 
-	http.Redirect(w, r, p.home, http.StatusSeeOther)
+	http.Redirect(w, r, p.redirect_success, http.StatusSeeOther)
 
+}
+
+func (p google_dev) GetHttpClient(r *http.Request) (*http.Client, string, error) {
+
+	token, err := p.getTokenFromClientCookie(r)
+	if err != nil {
+
+		redirect := r.Host + "/login/" + p.Name()
+
+		fmt.Println("REDIRECTION: ", redirect)
+
+		return nil, redirect, err
+	}
+
+	client := p.Config.Client(context.Background(), token)
+
+	return client, "", nil
 }

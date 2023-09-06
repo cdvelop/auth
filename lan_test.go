@@ -12,25 +12,17 @@ import (
 	"github.com/cdvelop/auth"
 )
 
-var (
-	testData = map[string]struct {
-		form_values url.Values
-		expected    string
-	}{
-		"sesión correcta": {url.Values{
-			"mail":     {"pedro@test.com"},
-			"password": {"1234"},
-		}, "200 OK"},
-	}
-)
+// var receivedCookies []*http.Cookie
 
 func TestLanLoginDefault(t *testing.T) {
-	var provider_name = "lan"
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", db{}.Home)
 
-	auth.Add("/", db{}, false, mux, []string{provider_name})
+	a := auth.Add("/", "clients", db{}, false, mux)
+
+	auth_lan := a.UseLanAuth("/")
 
 	server := httptest.NewServer(mux)
 	defer server.Close()
@@ -38,10 +30,19 @@ func TestLanLoginDefault(t *testing.T) {
 	for prueba, data := range testData {
 		t.Run((prueba), func(t *testing.T) {
 
-			resp, err := http.PostForm(server.URL+"/login/"+provider_name, data.form_values)
+			client := &http.Client{}
 
+			resp, err := client.PostForm(server.URL+auth_lan.LoginPattern(), data.form_values)
+			// resp, err := http.PostForm(server.URL+auth_lan.LoginPattern(), data.form_values)
 			if err != nil {
 				log.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			// Verificar si se creó la cookie
+			cookies := resp.Cookies()
+			if len(cookies) == 0 {
+				t.Errorf("La cookie no fue creada")
 			}
 
 			bodyBytes, err := io.ReadAll(resp.Body)
@@ -49,10 +50,33 @@ func TestLanLoginDefault(t *testing.T) {
 				log.Fatal(err)
 			}
 
-			if resp.Status != fmt.Sprint(data.expected) {
+			if resp.Status != data.expected {
 				fmt.Println("RESPUESTA: ", string(bodyBytes))
-				fmt.Println("CÓDIGO: ", resp.Status)
+				fmt.Println("CÓDIGO: ", resp.Status, "SE ESPERABA: ", data.expected)
 				log.Fatalln()
+			}
+
+			// Crear una nueva solicitud para leer la cookie
+			req, err := http.NewRequest("GET", server.URL+"/", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Agregar la cookie a la solicitud
+			if len(cookies) != 0 {
+				req.AddCookie(cookies[0])
+			}
+
+			// Enviar la solicitud a la función home
+			resp, err = client.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			resp.Body.Close()
+
+			// Verificar si la respuesta fue exitosa (código 200)
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("El acceso fue denegado. Código de estado: %d", resp.StatusCode)
 			}
 
 		})
@@ -60,54 +84,49 @@ func TestLanLoginDefault(t *testing.T) {
 
 }
 
-func TestDB(t *testing.T) {
-
-	result := db{}.ReadObject("table", map[string]string{"id": "1"})
-
-	fmt.Println(result)
-}
-
 type db struct{}
 
 func (db) Home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello")
-}
 
-func (d db) ReadObject(table_name string, where_fields map[string]string) map[string]string {
-	// Variables para almacenar el resultado y el número de coincidencias encontradas
-	var result map[string]string
-	var count int
-
-	// Iterar sobre los objetos en la base de datos simulada
-	for _, obj := range getObjectsFromDB() {
-		match := true
-		// Verificar si los campos y valores del objeto coinciden con los especificados en where_fields
-		for field, value := range where_fields {
-			if obj[field] != value {
-				match = false
-				break
-			}
+	r.ParseForm()
+	fmt.Println("Lan Login Recorre los parámetros enviados en la URL")
+	login_data := map[string]string{}
+	for key, values := range r.Form {
+		if len(values) == 1 {
+			login_data[key] = values[0]
 		}
-
-		// Si se encontró una coincidencia, almacenar el objeto y aumentar el contador
-		if match {
-			result = obj
-			count++
-		}
+		fmt.Printf("%s: %s\n", key, values)
 	}
+	fmt.Println("---------------------------")
 
-	// Si se encontró exactamente una coincidencia, retornar el resultado
-	if count == 1 {
-		return result
+	// Leer cookies
+	for _, c := range r.Cookies() {
+
+		fmt.Println("Name: ", c.Name, " value: ", c.Value)
+
 	}
-
-	return nil
 }
 
 // Función auxiliar para simular la obtención de objetos de la base de datos
 func getObjectsFromDB() []map[string]string {
 	return []map[string]string{
-		{"id": "1", "name": "pedro", "password": "111"},
+		{"id": "1", "name": "pedro", "password": "12345", "mail": "pedro@test.com"},
 		{"id": "2", "name": "maria", "password": "222"},
 	}
 }
+
+var (
+	testData = map[string]struct {
+		form_values url.Values
+		expected    string
+	}{
+		"sesión correcta": {url.Values{
+			"mail":     {"pedro@test.com"},
+			"password": {"12345"},
+		}, "200 OK"},
+		// "sesión incorrecta": {url.Values{
+		// 	"mail":     {"pedro@test.com"},
+		// 	"password": {"222"},
+		// }, "406 Not Acceptable"},
+	}
+)

@@ -5,25 +5,25 @@ import (
 	"github.com/cdvelop/model"
 )
 
-func (a *auth) Object() model.Object {
+func (a *Auth) buildObject() {
 
 	if len(a.fields) == 0 {
 
 		fields := []model.Field{
 			{Name: "mail", Legend: "Mail", Input: input.Mail()},
-			{Name: "password", Unique: true, Legend: "Contraseña", Input: input.Password()},
+			{Name: "password", Legend: "Contraseña", Input: input.Password()},
 		}
 
 		a.fields = append(a.fields, fields...)
 
 	}
 
-	o := model.Object{
-		Name:           "auth",
-		TextFieldNames: []string{},
-		Fields:         a.fields,
+	a.object = model.Object{
+		Name:             "auth",
+		TextFieldNames:   []string{},
+		Fields:           a.fields,
+		BackendRequest:   model.BackendRequest{},
+		FrontendResponse: model.FrontendResponse{},
 	}
-
-	return o
 
 }

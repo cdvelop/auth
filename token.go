@@ -9,7 +9,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (a *auth) saveTokenInClientCookie(token *oauth2.Token, w http.ResponseWriter) error {
+func (a *Auth) saveTokenInClientCookie(token *oauth2.Token, w http.ResponseWriter, r *http.Request) error {
 
 	// Genera un token JWT con la información del *oauth2.Token
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -23,16 +23,17 @@ func (a *auth) saveTokenInClientCookie(token *oauth2.Token, w http.ResponseWrite
 	}
 
 	// Duración del token
-	tokenDuration := time.Until(token.Expiry)
+	// tokenDuration := time.Until(token.Expiry)
+	tokenDuration := token.Expiry.Sub(time.Now())
 
-	a.setCookie(a.token, tokenString, tokenDuration, w)
+	SetCookie(a.token, tokenString, a.domain, a.https, tokenDuration, w)
 
 	return nil
 }
 
-func (a auth) getTokenFromClientCookie(r *http.Request) (*oauth2.Token, error) {
+func (a Auth) getTokenFromClientCookie(r *http.Request) (*oauth2.Token, error) {
 
-	cookie, err := getCookie(a.token, r)
+	cookie, err := GetCookie(a.token, r)
 	if err != nil {
 		return nil, err
 	}
