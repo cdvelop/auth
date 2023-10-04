@@ -3,7 +3,7 @@ module github.com/cdvelop/auth
 go 1.20
 
 require (
-	github.com/cdvelop/model v0.0.45
+	github.com/cdvelop/model v0.0.50
 	golang.org/x/oauth2 v0.9.0
 )
 
@@ -32,3 +32,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )
+
+replace github.com/cdvelop/model => ../model
+
+replace github.com/cdvelop/input => ../input

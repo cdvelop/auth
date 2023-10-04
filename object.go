@@ -19,11 +19,11 @@ func (a *Auth) buildObject() {
 	}
 
 	a.object = model.Object{
-		Name:             "auth",
-		TextFieldNames:   []string{},
-		Fields:           a.fields,
-		BackendRequest:   model.BackendRequest{},
-		FrontendResponse: model.FrontendResponse{},
+		Name:                "auth",
+		NamePrincipalFields: []string{},
+		Fields:              a.fields,
+		BackendHandler:      model.BackendHandler{},
+		FrontendHandler:     model.FrontendHandler{},
 	}
 
 }
