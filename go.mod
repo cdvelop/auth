@@ -3,7 +3,7 @@ module github.com/cdvelop/auth
 go 1.20
 
 require (
-	github.com/cdvelop/model v0.0.52
+	github.com/cdvelop/model v0.0.53
 	golang.org/x/oauth2 v0.9.0
 )
 
