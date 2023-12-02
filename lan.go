@@ -48,8 +48,8 @@ func (l *lan) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := l.object.ValidateData(false, false, login_data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+	if err != "" {
+		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 
