@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cdvelop/model"
+	"github.com/cdvelop/token"
 )
 
 type Auth struct {
@@ -13,8 +14,6 @@ type Auth struct {
 	client_table_name string
 
 	fields []model.Field
-	// retention map comenzará la retención dado el período establecido
-	rm map[string]otp
 
 	secret_key_token_signing string
 
@@ -39,9 +38,9 @@ func Add(redirect_success, client_table_name string, data_base db, https bool, h
 		db:                data_base,
 		client_table_name: client_table_name,
 
-		fields:                   fields,
-		rm:                       make(map[string]otp),
-		secret_key_token_signing: buildUniqueKey(16),
+		fields: fields,
+
+		secret_key_token_signing: token.BuildUniqueKey(16),
 
 		redirect_success: redirect_success,
 		token:            "token",

@@ -3,14 +3,14 @@ module github.com/cdvelop/auth
 go 1.20
 
 require (
-	github.com/cdvelop/model v0.0.74
+	github.com/cdvelop/model v0.0.75
 	golang.org/x/oauth2 v0.15.0
 )
 
 require (
 	cloud.google.com/go/compute v1.23.3 // indirect
 	github.com/cdvelop/strings v0.0.7 // indirect
-	github.com/cdvelop/timetools v0.0.23 // indirect
+	github.com/cdvelop/timetools v0.0.24 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.4.0 // indirect
@@ -26,7 +26,8 @@ require (
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	github.com/cdvelop/input v0.0.57
+	github.com/cdvelop/input v0.0.58
+	github.com/cdvelop/token v0.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/net v0.19.0 // indirect

@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/cdvelop/token"
 )
 
 func (a *Auth) createStatusCookie(w http.ResponseWriter) string {
 
-	value := buildUniqueKey(16)
+	value := token.BuildUniqueKey(16)
 
 	SetCookie(a.status, value, a.domain, a.https, 1*time.Minute, w)
 
