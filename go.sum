@@ -8,8 +8,8 @@ github.com/cdvelop/strings v0.0.7 h1:QNgHE+qUE37jRrJbD7lR2/T9Qb/2QezyqjZyD+qYQL0
 github.com/cdvelop/strings v0.0.7/go.mod h1:zNexDeXHRETbMmlmNThQeM7ksRsvzrphsCfwuSxaURk=
 github.com/cdvelop/timetools v0.0.25 h1:wQlzkzlIEMM1fi/0X16XwNsXKi/p95uNkd/hs491Q04=
 github.com/cdvelop/timetools v0.0.25/go.mod h1:M4CnyPBO72JZS9gWqm8QoHMUusjpOsdUDjMxEr0Aggw=
-github.com/cdvelop/token v0.0.2 h1:p0K60gZY2Jy4xF+6RmzOy7UQOxC38CPAU9TS6OGh5lQ=
-github.com/cdvelop/token v0.0.2/go.mod h1:ANC5a0EWBo/iXNxSAY6tecAcv9tPHv9/nzvK7cuzAhg=
+github.com/cdvelop/token v0.0.3 h1:ZS71tq2+PI7K9JxV0dZUWVIEZbjUJsdeYeFn1PPAGr4=
+github.com/cdvelop/token v0.0.3/go.mod h1:ANC5a0EWBo/iXNxSAY6tecAcv9tPHv9/nzvK7cuzAhg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
